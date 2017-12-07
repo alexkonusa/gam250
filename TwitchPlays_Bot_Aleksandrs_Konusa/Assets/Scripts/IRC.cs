@@ -206,7 +206,7 @@ public class IRC : MonoBehaviour
 		lock (ircCmdQueue) 
 		{
 
-			ircCmdQueue.Enqueue (cmd);
+			ircCmdQueue.Enqueue (cmd + " tmi.twitch.tv\r\n");
 
 		}
 
