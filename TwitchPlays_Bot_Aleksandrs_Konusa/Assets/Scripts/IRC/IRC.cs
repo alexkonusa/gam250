@@ -44,6 +44,7 @@ public class IRC : MonoBehaviour
 	Queue<string> recievedMessages = new Queue<string>();
 	Queue<string> ircCmdQueue = new Queue<string>();
 	public Queue<MSGClass> cmdToExecute = new Queue<MSGClass>();
+	[HideInInspector]
 	public List<string> actions = new List<string> ();
 
 
@@ -182,8 +183,11 @@ public class IRC : MonoBehaviour
 				//Split Our Message Into UserName, Message fields.
 				string msg = recievedMessages.Peek ();
 
+
+				string userName = msg.Split ('!') [0];
+				userName = userName.Replace (":", "");
+
 				msg = msg.Split ('#') [1];
-				string userName = msg.Split (' ') [0];
 				string userMsg = msg.Split (':') [1];
 
 
@@ -274,5 +278,12 @@ public class IRC : MonoBehaviour
 
 		}
 
+	}
+
+	public void AddAction(string action)
+	{
+
+		actions.Add (action);
+		
 	}
 }
