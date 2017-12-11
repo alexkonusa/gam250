@@ -10,9 +10,7 @@ using Debug = UnityEngine.Debug;
 public class IRC : MonoBehaviour
 {
 	//Requered information to create our connection with twitch
-	[SerializeField]
-	private string ip = "IP";
-	[SerializeField]
+	private string ip = "irc.chat.twitch.tv";
 	private int port = 6667;
 	[SerializeField]
 	private string userName = "USER NAME";
@@ -22,7 +20,6 @@ public class IRC : MonoBehaviour
 	private string channelName = "CHANNEL NAME";
 
 	//Other Variables
-	[SerializeField]
 	private int msgSendDelay = 1750;
 
 	//STATUS CODES
@@ -43,9 +40,11 @@ public class IRC : MonoBehaviour
 	//buffer for recieved messages
 	private string buffer;
 
-	//Lists and Queue's
-	List<string> recievedMSGs = new List<string>();
+	//Queue's & Lists
+	Queue<string> recievedMessages = new Queue<string>();
 	Queue<string> ircCmdQueue = new Queue<string>();
+	public Queue<MSGClass> cmdToExecute = new Queue<MSGClass>();
+	public List<string> actions = new List<string> ();
 
 
 	//Use this for initialization
@@ -53,6 +52,13 @@ public class IRC : MonoBehaviour
 	{
 
 		IRCStart();
+
+	}
+
+	void Update()
+	{
+
+		ProcessOurRecievedMessage();
 
 	}
 
@@ -64,10 +70,10 @@ public class IRC : MonoBehaviour
 
 		if (!tcpClient.Connected)
 		{ 
-			Debug.Log ("Connection failed");
+			print("Connection failed");
 			return;
 		} else 
-			Debug.Log ("Connected");
+			print("Connected");
 
 		var networkStream = tcpClient.GetStream();
 		streamReader = new StreamReader(networkStream);
@@ -87,18 +93,19 @@ public class IRC : MonoBehaviour
 
 	private void IRCInput(TextReader inStream, NetworkStream networkStream)
 	{
-		while (!stopThreading) {
-			if (networkStream.DataAvailable) {
+		while (!stopThreading)
+		{
+			if (networkStream.DataAvailable) 
+			{
 
 				buffer = inStream.ReadLine ();
 
-				Debug.Log (buffer);
+				print(buffer);
 
 				string msg = buffer.Split (' ') [1];
 
-				Debug.Log (msg);
-
-				switch (msg) {
+				switch (msg) 
+				{
 
 				case JOIN_STATUS_CODE:
 					{
@@ -108,14 +115,13 @@ public class IRC : MonoBehaviour
 
 				case INVALID_CMD_CODE:
 					{
-						Debug.Log ("INVALID COMMAND");
+						print ("INVALID COMMAND");
 						break;
 					}
 
 				case MSG_CODE:
 					{
-						Debug.Log (buffer + " I GOT ONE");
-						IRCSendWhisper ("Channel Name: WhySo-Shy | Player Stats: Health = 100 Money = 5000 | Time Played: 1Hr", "whyso_shy");
+						recievedMessages.Enqueue (buffer);
 						break;
 					}
 
@@ -134,7 +140,7 @@ public class IRC : MonoBehaviour
 
 	void IRCOutput(TextWriter outStream)
 	{
-		//Thread for sending mesagges to the channel! :) 
+		//Thread for sending mesagges to the channel! With a slight delay between each message so that we wont get timeout. 
 		Stopwatch stopWatch = new Stopwatch ();
 		stopWatch.Start ();
 
@@ -165,6 +171,45 @@ public class IRC : MonoBehaviour
 		} 
 	}
 
+	//Process our Messages and Check if they're an action
+	public void ProcessOurRecievedMessage()
+	{
+
+		if (recievedMessages.Count > 0) 
+		{
+			lock (recievedMessages)
+			{
+				//Split Our Message Into UserName, Message fields.
+				string msg = recievedMessages.Peek ();
+
+				msg = msg.Split ('#') [1];
+				string userName = msg.Split (' ') [0];
+				string userMsg = msg.Split (':') [1];
+
+
+				for (int i = 0; i < actions.Count; i++) 
+				{
+					string cmd = actions [i];
+
+					if (userMsg.Contains (cmd)) 
+					{
+						cmdToExecute.Enqueue (new MSGClass (userName, userMsg));
+						//Debug.Log (cmdToExecute.Peek ().userName + "   " + cmdToExecute.Peek ().userCmd);
+						break;
+					}
+					else
+						print ("This message does not contain any actions");
+				} 
+
+			}
+
+			recievedMessages.Dequeue ();
+
+		}
+
+	}
+
+	//We can join multiple IRC channels at once :) 
 	public void IRCJoinChannel()
 	{
 
@@ -187,19 +232,19 @@ public class IRC : MonoBehaviour
 	}
 
 	//Private Message Function
-	public void IRCSendWhisper(string prvMsg, string destination)
+	public void IRCSendWhisper(string msg, string destination)
 	{
 
 		lock (ircCmdQueue) 
 		{
 
-			ircCmdQueue.Enqueue ("PRIVMSG #" + channelName + " :" + "/w " + destination + " :" + prvMsg + "\r\n");
+			ircCmdQueue.Enqueue ("PRIVMSG #" + channelName + " :" + "/w " + destination + " :" + msg + "\r\n");
 
 		}
 
 	}
 
-	//Sending Messages to IRC 
+	//Send message to the IRC server
 	public void IRCSendCommand(string cmd)
 	{
 
