@@ -32,6 +32,7 @@ public class _PlayerController : MonoBehaviour
     {
 
         //Player move state machine
+		//This is where we affect the player movment depending on it's state
         switch (currentState)
         {
 
@@ -80,6 +81,7 @@ public class _PlayerController : MonoBehaviour
     //Public functions to change our states depending on the command
     public void StateForward()
     {
+
         rb.velocity = Vector3.zero;
         currentState = PlayerState.Forward;
 
@@ -112,4 +114,11 @@ public class _PlayerController : MonoBehaviour
         currentState = PlayerState.Idle;
 
     }
+
+	public void FireTheProjectile()
+	{
+
+
+		
+	}
 }

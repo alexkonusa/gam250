@@ -63,7 +63,7 @@ public class SetUpWindow : EditorWindow
 			
 		}
 
-
+		//Display our GUI help labels
 		EditorGUILayout.LabelField ("HELP");
 		EditorGUILayout.LabelField ("Twitch User Name: Your Twitch Bot/Account username lower case.");
 		EditorGUILayout.LabelField ("Twitch OAUTH Token: Can be generated here:");

@@ -9,16 +9,16 @@ public class CommandManager : MonoBehaviour
 	IRC irc;
 	PlayerProfiles _playerProfiles;
 	GameStateManager gameStateManager;
-
     _PlayerController pController;
+	GameObject playerPrefab;
+	GameObject spawnPoint;
 
 	// Use this for initialization
 	void Start () 
 	{
 		irc = GameObject.Find ("IRCManager").GetComponent<IRC> ();
-		//_playerProfiles = GameObject.Find ("PlayerManager").GetComponent<PlayerProfiles> ();
-		//gameStateManager = GameObject.Find ("GameManager").GetComponent<GameStateManager> ();
-        pController = GameObject.Find("Player").GetComponent<_PlayerController>();
+		playerPrefab = Resources.Load("PlayerModels/Knight") as GameObject;
+		spawnPoint = GameObject.Find ("SpawnPoint");
 
     }
 
@@ -29,7 +29,8 @@ public class CommandManager : MonoBehaviour
 		
 	}
 
-	//Class to sort the commands and execute them accoring to the action
+	//This is function to sort the commands and run the correct function
+	//In my case this will get the command, check for players name and apply specific command to that player.
 	void SortTheCommands ()
 	{
 		
@@ -47,6 +48,8 @@ public class CommandManager : MonoBehaviour
                     //Actions/Command State machine
                     case "&stop":
                         {
+							
+							pController = GameObject.Find(cmdUserName).GetComponent<_PlayerController>();
                             pController.StateIdle();
                             break;
 
@@ -54,6 +57,7 @@ public class CommandManager : MonoBehaviour
 
                     case "&f":
                         {
+							pController = GameObject.Find(cmdUserName).GetComponent<_PlayerController>();
                             pController.StateForward();
                             break;
 
@@ -61,6 +65,7 @@ public class CommandManager : MonoBehaviour
 
                     case "&b":
                         {
+							pController = GameObject.Find(cmdUserName).GetComponent<_PlayerController>();
                             pController.StateBack();
                             break;
 
@@ -68,6 +73,7 @@ public class CommandManager : MonoBehaviour
 
                     case "&r":
                         {
+							pController = GameObject.Find(cmdUserName).GetComponent<_PlayerController>();
                             pController.StateRight();
                             break;
 
@@ -75,16 +81,28 @@ public class CommandManager : MonoBehaviour
 
                     case "&l":
                         {
+							pController = GameObject.Find(cmdUserName).GetComponent<_PlayerController>();
                             pController.StateLeft();
                             break;
 
                         }
-					case "&msg":
-					{
-						irc.IRCSendWhisper ("My User Name is: " + cmdUserName + "My msg was: " + cmdUserMSG, cmdUserName);
-						break;
 
-					}
+					case "&msg":
+						{
+							irc.IRCSendWhisper ("My User Name is: " + cmdUserName + "My msg was: " + cmdUserMSG, cmdUserName);
+							break;
+
+						}
+
+					case "&join":
+						{
+
+							GameObject Player = Instantiate (playerPrefab, spawnPoint.transform.position, spawnPoint.transform.rotation);
+							Player.name = cmdUserName;
+							Player.GetComponent<MeshRenderer> ().material.color = new Color (Random.Range (0f, 1f), Random.Range (0f, 1f), Random.Range (0f, 1f), Random.Range (0f, 1f));
+							break;
+
+						}
                 }
 			}
 
@@ -94,6 +112,11 @@ public class CommandManager : MonoBehaviour
 
 	}
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*		//When command &Join Knight is executed it will create a character profile in profiles with name, class and gameObject.
 case "&Join Knight":

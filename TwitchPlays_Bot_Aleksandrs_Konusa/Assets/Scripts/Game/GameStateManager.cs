@@ -33,6 +33,7 @@ public class GameStateManager : MonoBehaviour
 		
 	}
 
+	//Switch between states
 	void Update()
 	{
 		switch (currentState) 

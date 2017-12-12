@@ -148,7 +148,7 @@ public class IRC : MonoBehaviour
 	void IRCOutput(TextWriter outStream)
 	{
 		//Thread for sending mesagges to the channel! With a slight
-		//delay between each message so that we wont get timeout. 
+		//delay between each message so that we dont get timeout. 
 		Stopwatch stopWatch = new Stopwatch ();
 		stopWatch.Start ();
 
@@ -268,6 +268,15 @@ public class IRC : MonoBehaviour
 
 	}
 
+	//Function to leave the channel
+	public void IRCLeaveChannel()
+	{
+
+		streamWriter.WriteLine("PART #" + channelName);
+		streamWriter.Flush();
+
+	}
+
 
 	//End off connection and threading
 	private void OnApplicationQuit()
@@ -287,6 +296,7 @@ public class IRC : MonoBehaviour
 
 	}
 
+	//Function to add the action to our action List
 	public void AddAction(string action)
 	{
 
