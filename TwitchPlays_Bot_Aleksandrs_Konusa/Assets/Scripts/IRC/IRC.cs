@@ -179,7 +179,7 @@ public class IRC : MonoBehaviour
 		} 
 	}
 
-	//Process our Messages and Check if they're an action
+	//Process our Messages and Check if they contain an action
 	public void ProcessOurRecievedMessage()
 	{
 
@@ -187,7 +187,7 @@ public class IRC : MonoBehaviour
 		{
 			lock (recievedMessages)
 			{
-				//Split Our Message Into UserName, Message fields.
+				//Get the first message
 				string msg = recievedMessages.Peek ();
 
 				//Process our string and get a msg/name

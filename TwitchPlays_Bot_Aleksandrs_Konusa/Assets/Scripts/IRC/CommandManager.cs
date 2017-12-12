@@ -29,8 +29,8 @@ public class CommandManager : MonoBehaviour
 		
 	}
 
-	//This is function to sort the commands and run the correct function
-	//In my case this will get the command, check for players name and apply specific command to that player.
+	//Function to sort the commands and run the correct function
+	//In my case this will check for players name and apply specific command to that player.
 	void SortTheCommands ()
 	{
 		
@@ -94,6 +94,7 @@ public class CommandManager : MonoBehaviour
 
 						}
 
+                        //Instantiate the player with their name
 					case "&join":
 						{
 

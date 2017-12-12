@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//This is a msg class 
 public class MSGClass 
 {
 

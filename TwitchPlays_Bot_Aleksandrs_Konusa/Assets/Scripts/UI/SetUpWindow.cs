@@ -7,7 +7,8 @@ using UnityEditor;
 public class SetUpWindow : EditorWindow
 {
 
-	//This is the set Up UI which created a prefab that creates a connection with twitch
+	//This is the UI set up window 
+    //Using this window we create our twitch IRC manager in the scene
 	string twitchUserName;
 	string twitchOAUTHKey;
 	string twitchChannelName;

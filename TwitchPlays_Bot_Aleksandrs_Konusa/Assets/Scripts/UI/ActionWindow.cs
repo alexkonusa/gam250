@@ -16,7 +16,7 @@ public class ActionWindow : EditorWindow
 	string newAction;
 	object Button;
 
-	//Adding and creating our Action window
+	//Adding our action window to window in the editor
 	[MenuItem("Window/IRCActions")]
 	public static void ShowWindow()
 	{

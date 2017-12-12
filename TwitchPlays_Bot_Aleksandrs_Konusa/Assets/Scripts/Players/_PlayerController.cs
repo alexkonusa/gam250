@@ -16,6 +16,7 @@ public class _PlayerController : MonoBehaviour
 
     }
 
+    //Our current state
     public PlayerState currentState;
 
     Rigidbody rb;
@@ -114,11 +115,4 @@ public class _PlayerController : MonoBehaviour
         currentState = PlayerState.Idle;
 
     }
-
-	public void FireTheProjectile()
-	{
-
-
-		
-	}
 }
