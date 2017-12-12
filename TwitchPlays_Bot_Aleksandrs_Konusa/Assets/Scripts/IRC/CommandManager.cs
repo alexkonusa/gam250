@@ -79,6 +79,12 @@ public class CommandManager : MonoBehaviour
                             break;
 
                         }
+					case "&msg":
+					{
+						irc.IRCSendWhisper ("My User Name is: " + cmdUserName + "My msg was: " + cmdUserMSG, cmdUserName);
+						break;
+
+					}
                 }
 			}
 

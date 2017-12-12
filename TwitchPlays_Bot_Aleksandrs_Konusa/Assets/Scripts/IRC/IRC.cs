@@ -12,12 +12,12 @@ public class IRC : MonoBehaviour
 	//Requered information to create our connection with twitch
 	private string ip = "irc.chat.twitch.tv";
 	private int port = 6667;
-	[SerializeField]
-	private string userName = "USER NAME";
-	[SerializeField]
-	private string aouthToken = "OAUTH KEY";
-	[SerializeField]
-	private string channelName = "CHANNEL NAME";
+	[HideInInspector]
+	public string userName = "USER NAME";
+	[HideInInspector]
+	public string aouthToken = "OAUTH KEY";
+	[HideInInspector]
+	public string channelName = "CHANNEL NAME";
 
 	//Other Variables
 	private int msgSendDelay = 1750;
