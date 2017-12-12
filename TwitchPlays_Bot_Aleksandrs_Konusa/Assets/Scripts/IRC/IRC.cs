@@ -35,9 +35,10 @@ public class IRC : MonoBehaviour
 	private StreamWriter streamWriter;
 	private Thread inStream, outStream;
 
+	//To stop our threading
 	bool stopThreading;
 
-	//buffer for recieved messages
+	//Buffer for recieved messages
 	private string buffer;
 
 	//Queue's & Lists
@@ -66,7 +67,7 @@ public class IRC : MonoBehaviour
 	//Creating our tcp connection and threading for in and out. 
 	void IRCStart()
 	{
-
+		//Create a new tcp connection
 		tcpClient = new TcpClient(ip, port);
 
 		if (!tcpClient.Connected)
@@ -80,11 +81,13 @@ public class IRC : MonoBehaviour
 		streamReader = new StreamReader(networkStream);
 		streamWriter = new StreamWriter(networkStream);
 
+		//Send our details to the server to create the connection
 		streamWriter.WriteLine("PASS " + aouthToken);
 		streamWriter.WriteLine("NICK " + userName.ToLower());
 		streamWriter.WriteLine("USER " + userName + "8 * : " + userName);
 		streamWriter.Flush();
 
+		//Create our threads and start them
 		inStream = new Thread(() => IRCInput(streamReader, networkStream));
 		inStream.Start();
 		outStream = new Thread(() => IRCOutput(streamWriter));
@@ -92,6 +95,9 @@ public class IRC : MonoBehaviour
 
 	}
 
+	//Our input thread
+	//In this thread we check for our message codes and
+	//figure out what to do with them
 	private void IRCInput(TextReader inStream, NetworkStream networkStream)
 	{
 		while (!stopThreading)
@@ -138,10 +144,11 @@ public class IRC : MonoBehaviour
 		}
 	}
 
-
+	//Out thread to send messages to the server
 	void IRCOutput(TextWriter outStream)
 	{
-		//Thread for sending mesagges to the channel! With a slight delay between each message so that we wont get timeout. 
+		//Thread for sending mesagges to the channel! With a slight
+		//delay between each message so that we wont get timeout. 
 		Stopwatch stopWatch = new Stopwatch ();
 		stopWatch.Start ();
 
@@ -153,7 +160,7 @@ public class IRC : MonoBehaviour
 				if (ircCmdQueue.Count > 0) {
 
 					if (stopWatch.ElapsedMilliseconds > msgSendDelay) {
-						//sending our message to the server
+						//Sending our message to the server
 						outStream.WriteLine (ircCmdQueue.Peek ());
 						outStream.Flush ();
 
@@ -183,14 +190,14 @@ public class IRC : MonoBehaviour
 				//Split Our Message Into UserName, Message fields.
 				string msg = recievedMessages.Peek ();
 
-
+				//Process our string and get a msg/name
 				string userName = msg.Split ('!') [0];
 				userName = userName.Replace (":", "");
 
 				msg = msg.Split ('#') [1];
 				string userMsg = msg.Split (':') [1];
 
-
+				//If the message contains one of our actions do something with it
 				for (int i = 0; i < actions.Count; i++) 
 				{
 					string cmd = actions [i];

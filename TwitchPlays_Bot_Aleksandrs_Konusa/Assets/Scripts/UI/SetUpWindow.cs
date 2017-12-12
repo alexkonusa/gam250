@@ -24,7 +24,7 @@ public class SetUpWindow : EditorWindow
 	void Awake()
 	{
 
-		ircManager = Resources.Load("IRCManager") as GameObject;
+		ircManager = Resources.Load("/IRC/IRCManager") as GameObject;
 		
 	}
 
