@@ -7,33 +7,21 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 
+[System.Serializable]
 public class IRC : MonoBehaviour
 {
-	//Requered information to create our connection with twitch
-	private string ip = "irc.chat.twitch.tv";
-	private int port = 6667;
-	[HideInInspector]
-	public string userName = "USER NAME";
-	[HideInInspector]
-	public string aouthToken = "OAUTH KEY";
-	[HideInInspector]
-	public string channelName = "CHANNEL NAME";
+	//Connection Data
+	IRC_CONNECTION_INFO _IRC_CONNECTION_INFO;
 
 	//Other Variables
 	private int msgSendDelay = 1750;
-
-	//STATUS CODES
-	const string 
-	JOIN_STATUS_CODE = "001",
-	INVALID_CMD_CODE = "423",
-	MSG_CODE = "PRIVMSG",
-	SERVER_REPLY_CODE = "PING";
 
 	//TCP and Threading
 	private TcpClient tcpClient;
 	private StreamReader streamReader;
 	private StreamWriter streamWriter;
 	private Thread inStream, outStream;
+	NetworkStream networkStream;
 
 	//To stop our threading
 	bool stopThreading;
@@ -44,14 +32,16 @@ public class IRC : MonoBehaviour
 	//Queue's & Lists
 	Queue<string> recievedMessages = new Queue<string>();
 	Queue<string> ircCmdQueue = new Queue<string>();
-	public Queue<MSGClass> cmdToExecute = new Queue<MSGClass>();
+	public Queue<MSG_CLASS> cmdToExecute = new Queue<MSG_CLASS>();
 	[HideInInspector]
-	public List<string> actions = new List<string> ();
+	[SerializeField]
+	public List<IRC_ACTION_CLASS> actions = new List<IRC_ACTION_CLASS> ();
 
 
 	//Use this for initialization
 	void Start ()
 	{
+		_IRC_CONNECTION_INFO = GetComponent<IRC_CONNECTION_INFO> ();
 
 		IRCStart();
 
@@ -68,36 +58,46 @@ public class IRC : MonoBehaviour
 	void IRCStart()
 	{
 		//Create a new tcp connection
-		tcpClient = new TcpClient(ip, port);
+		tcpClient = new TcpClient(_IRC_CONNECTION_INFO.ip, _IRC_CONNECTION_INFO.port);
 
-		if (!tcpClient.Connected)
+		if (tcpClient.Connected)
 		{ 
-			print("Connection failed");
-			return;
-		} else 
 			print("Connected");
 
-		var networkStream = tcpClient.GetStream();
-		streamReader = new StreamReader(networkStream);
-		streamWriter = new StreamWriter(networkStream);
+			networkStream = tcpClient.GetStream();
+			streamReader = new StreamReader(networkStream);
+			streamWriter = new StreamWriter(networkStream);
 
-		//Send our details to the server to create the connection
-		streamWriter.WriteLine("PASS " + aouthToken);
-		streamWriter.WriteLine("NICK " + userName.ToLower());
-		streamWriter.WriteLine("USER " + userName + "8 * : " + userName);
-		streamWriter.Flush();
+			//Send our details to the server to create the connection
+			streamWriter.WriteLine("PASS " + _IRC_CONNECTION_INFO.aouthToken);
+			streamWriter.WriteLine("NICK " + _IRC_CONNECTION_INFO.userName.ToLower());
+			streamWriter.WriteLine("USER " + _IRC_CONNECTION_INFO.userName + "8 * : " + _IRC_CONNECTION_INFO.userName);
+			streamWriter.Flush();
+
+			//Create and Start Our Threads
+			Threading ();
+
+		} 
+		else 
+		{
+			print("Failed To Connect");
+			Destroy (gameObject); //if connection is Failed destroy this game object. 
+		}
+	}
+
+	//Threading
+	void Threading()
+	{
 
 		//Create our threads and start them
 		inStream = new Thread(() => IRCInput(streamReader, networkStream));
 		inStream.Start();
 		outStream = new Thread(() => IRCOutput(streamWriter));
 		outStream.Start();
-
+		
 	}
 
-	//Our input thread
-	//In this thread we check for our message codes and
-	//figure out what to do with them
+	//Input thread, this thread listens for messages then deals with them
 	private void IRCInput(TextReader inStream, NetworkStream networkStream)
 	{
 		while (!stopThreading)
@@ -114,25 +114,25 @@ public class IRC : MonoBehaviour
 				switch (msg) 
 				{
 
-				case JOIN_STATUS_CODE:
+				case IRC_STATUS_CODES.JOIN_STATUS_CODE:
 					{
-						IRCJoinChannel ();
+						IRCJoinChannel (_IRC_CONNECTION_INFO.channelName);
 						break;
 					}
 
-				case INVALID_CMD_CODE:
+				case IRC_STATUS_CODES.INVALID_CMD_CODE:
 					{
 						print ("INVALID COMMAND");
 						break;
 					}
 
-				case MSG_CODE:
+				case IRC_STATUS_CODES.MSG_CODE:
 					{
 						recievedMessages.Enqueue (buffer);
 						break;
 					}
 
-				case SERVER_REPLY_CODE:
+				case IRC_STATUS_CODES.SERVER_REPLY_CODE:
 					{
 						IRCSendCommand ("PONG");
 						break;
@@ -145,7 +145,7 @@ public class IRC : MonoBehaviour
 	}
 
 	//Out thread to send messages to the server
-	void IRCOutput(TextWriter outStream)
+	private void IRCOutput(TextWriter outStream)
 	{
 		//Thread for sending mesagges to the channel! With a slight
 		//delay between each message so that we dont get timeout. 
@@ -180,7 +180,7 @@ public class IRC : MonoBehaviour
 	}
 
 	//Process our Messages and Check if they contain an action
-	public void ProcessOurRecievedMessage()
+	void ProcessOurRecievedMessage()
 	{
 
 		if (recievedMessages.Count > 0) 
@@ -200,11 +200,11 @@ public class IRC : MonoBehaviour
 				//If the message contains one of our actions do something with it
 				for (int i = 0; i < actions.Count; i++) 
 				{
-					string cmd = actions [i];
+					string cmd = actions [i].action;
 
 					if (userMsg.Contains (cmd)) 
 					{
-						cmdToExecute.Enqueue (new MSGClass (userName, userMsg));
+						cmdToExecute.Enqueue (new MSG_CLASS (userName, userMsg));
 						//Debug.Log (cmdToExecute.Peek ().userName + "   " + cmdToExecute.Peek ().userCmd);
 						break;
 					}
@@ -221,7 +221,7 @@ public class IRC : MonoBehaviour
 	}
 
 	//We can join multiple IRC channels at once :) 
-	public void IRCJoinChannel()
+	public void IRCJoinChannel(string channelName)
 	{
 
 		streamWriter.WriteLine("JOIN #" + channelName);
@@ -236,7 +236,7 @@ public class IRC : MonoBehaviour
 		lock (ircCmdQueue) 
 		{
 
-			ircCmdQueue.Enqueue ("PRIVMSG #" + channelName + " :" + msg + "\r\n");
+			ircCmdQueue.Enqueue ("PRIVMSG #" + _IRC_CONNECTION_INFO.channelName + " :" + msg + "\r\n");
 
 		}
 
@@ -249,7 +249,7 @@ public class IRC : MonoBehaviour
 		lock (ircCmdQueue) 
 		{
 
-			ircCmdQueue.Enqueue ("PRIVMSG #" + channelName + " :" + "/w " + destination + " :" + msg + "\r\n");
+			ircCmdQueue.Enqueue ("PRIVMSG #" + _IRC_CONNECTION_INFO.channelName + " :" + "/w " + destination + " :" + msg + "\r\n");
 
 		}
 
@@ -272,7 +272,7 @@ public class IRC : MonoBehaviour
 	public void IRCLeaveChannel()
 	{
 
-		streamWriter.WriteLine("PART #" + channelName);
+		streamWriter.WriteLine("PART #" + _IRC_CONNECTION_INFO.channelName);
 		streamWriter.Flush();
 
 	}
@@ -297,10 +297,11 @@ public class IRC : MonoBehaviour
 	}
 
 	//Function to add the action to our action List
+	[SerializeField]
 	public void AddAction(string action)
 	{
 
-		actions.Add (action);
+		//actions.Add (action);
 		
 	}
 }

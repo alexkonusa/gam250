@@ -20,6 +20,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4576762526763816}
   - component: {fileID: 114372096135357880}
+  - component: {fileID: 114769850803064616}
   - component: {fileID: 114054404656653848}
   m_Layer: 0
   m_Name: IRCManager
@@ -63,9 +64,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0e51ec432845da47a544e6b08815fa5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  userName: bigal_bot
-  aouthToken: oauth:oioa3ghn78yfyy7pwf3hc9hn0k152k
-  channelName: whyso_shy
   actions:
   - '&join'
   - '&test'
+--- !u!114 &114769850803064616
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1578703930067342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8fe7a21fcbb6484dbabbf60e105e12f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ip: irc.chat.twitch.tv
+  port: 6667
+  userName: USER NAME
+  aouthToken: OAUTH KEY
+  channelName: CHANNEL NAME
