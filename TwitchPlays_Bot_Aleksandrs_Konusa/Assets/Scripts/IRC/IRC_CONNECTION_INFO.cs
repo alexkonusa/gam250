@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 
-//Requered information to create our connection with twitch
-//[System.Serializable]
 public class IRC_CONNECTION_INFO : MonoBehaviour
 {
 	[HideInInspector]
