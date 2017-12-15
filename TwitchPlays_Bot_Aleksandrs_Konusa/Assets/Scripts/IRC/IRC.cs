@@ -295,13 +295,4 @@ public class IRC : MonoBehaviour
 		}
 
 	}
-
-	//Function to add the action to our action List
-	[SerializeField]
-	public void AddAction(string action)
-	{
-
-		//actions.Add (action);
-		
-	}
 }
